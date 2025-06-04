@@ -11,4 +11,5 @@ module.exports = {
   modulePathIgnorePatterns: ["test.js"],
   setupFiles: ["dotenv/config"],
   silent: false,
+  verbose: true
 };
