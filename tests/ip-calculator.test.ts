@@ -16,8 +16,18 @@ describe("ipToID", () => {
     expect(result).toBe(167772161);
   });
 
+  it("should return id 4294967295 for ip 255.255.255.255", () => {
+    const result = ipToID("255.255.255.255");
+    expect(result).toBe(4294967295);
+  });
+
   it("should return id 5052902700 for ip 300.300.300.300", () => {
     const result = ipToID("300.300.300.300");
     expect(result).toBe(5052902700);
+  });
+
+  it("should return id 0 for invalid ip 98dh32ks", () => {
+    const result = ipToID("98dh32ks");
+    expect(result).toBe(0);
   });
 });

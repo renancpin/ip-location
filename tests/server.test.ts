@@ -23,13 +23,12 @@ describe("integration tests", () => {
       `http://localhost:${PORT}/${PATH}?ip=${inputIp}`
     );
     const resultBody = await result.json();
-    console.log(resultBody);
 
     expect(result.status).toBe(200);
     expect(resultBody).toMatchObject(expectedResult);
   });
 
-  it("should return 404 when the ip didn't exist", async () => {
+  it("should return 404 when the ip doesn't exist", async () => {
     const inputIp = "256.256.256.256";
     const result = await fetch(
       `http://localhost:${PORT}/${PATH}?ip=${inputIp}`
