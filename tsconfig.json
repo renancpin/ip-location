@@ -36,7 +36,8 @@
     "paths": {
       "@domain/*": ["src/1-domain/*"],
       "@application/*": ["src/2-application/*"],
-      "@infrastructure/*": ["src/3-infrastructure/*"]
+      "@infrastructure/*": ["src/3-infrastructure/*"],
+      "@utils/*": ["src/utils/*"]
     } /* Specify a set of entries that re-map imports to additional lookup locations. */,
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */

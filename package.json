@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"database/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "build": "rimraf ./dist && tsc && tsc-alias",
     "cleanup": "rimraf ./dist ./node_modules/",
     "start": "ts-node ./index.ts",
     "start:prod": "node dist/index",
     "start:dev": "node --watch -r ts-node/register ./index.ts",
-    "loadcsv": "ts-node ./database/import-ips.ts",
+    "dataset:load": "ts-node ./scripts/load-dataset.script.ts --run",
     "test": "jest",
     "test:performance": "k6 run ./tests/test.js",
     "test:performance:dashboard": "K6_WEB_DASHBOARD=true k6 run ./tests/test.js"
