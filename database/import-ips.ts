@@ -4,23 +4,28 @@ import { createInterface } from "readline";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 
-async function importCSVToSQLite() {
-  const csvFilePath = process.env.IPLOCATION_CSV_PATH ?? "ips.csv"; // Update this with your CSV file path
-  const dbPath = process.env.DB_HOST ?? "ips.db";
+const {
+  IPLOCATION_CSV_PATH = "iplocation-dataset.csv",
+  DB_HOST = "database/ips;db",
+} = process.env;
 
+async function importCSVToSQLite() {
   try {
     // Get start time
     const start = Date.now();
 
     // Open SQLite database
     const db = await open({
-      filename: dbPath,
+      filename: DB_HOST,
       driver: sqlite3.Database,
     });
 
-    // Create/Recreate ip table
-    await db.exec(`DROP TABLE IF EXISTS ip`);
+    // Set up ip table
     await db.exec(`
+      -- Drop ip table if it exists
+      DROP TABLE IF EXISTS ip;
+
+      -- Create/Recreate ip table
       CREATE TABLE IF NOT EXISTS ip (
         lower_ip_id INTEGER,
         upper_ip_id INTEGER,
@@ -28,19 +33,17 @@ async function importCSVToSQLite() {
         country_name TEXT,
         state_region TEXT,
         city TEXT
-      )
-    `);
+      );
 
-    // Create index
-    await db.exec(`
+      -- Create index on ip_id columns
       CREATE INDEX "ip_range" ON "ip" (
-        "upper_ip_id"	ASC,
-        "lower_ip_id" DESC
+        "lower_ip_id",
+        "upper_ip_id" DESC
       )
     `);
 
     // Create read stream for CSV
-    const fileStream = createReadStream(csvFilePath);
+    const fileStream = createReadStream(IPLOCATION_CSV_PATH);
     const readInterface = createInterface({
       input: fileStream,
       crlfDelay: Infinity,
