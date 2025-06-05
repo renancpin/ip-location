@@ -8,7 +8,7 @@ Implement a REST API using TypeScript that resolves a given IP address to a worl
 
 ## Dataset
 
-The provided CSV file [iplocation-dataset.csv](iplocation-dataset.csv) has **2,979,950 rows** (`330Mb`).
+The provided CSV file [iplocation-dataset.csv](https://github.com/renancpin/ip-location/raw/refs/heads/main/iplocation-dataset.csv?download=) has **2,979,950 rows** (`330Mb`).
 Each row describes an IP range and its corresponding location.
 
 - The file is **comma-separated** (`,`) and fields are encased in **double quotes** (`" "`).
@@ -82,7 +82,9 @@ Below, there are step to setup, run, test, and the thoughts behind many importan
 
 ## Setup And Run
 
-First, install dependencies with your preferred package manager:
+### 1. Installing Dependencies
+
+First, install packages with your preferred package manager:
 
 ```bash
 npm install
@@ -90,33 +92,38 @@ npm install
 yarn install
 ```
 
-Then, run the `start` script:
+### 2. Loading Dataset
 
-```bash
-npm run start
-# or
-yarn start
-```
+There is a [**script**](/database/import-ips.ts) available at the `database` folder that will load a csv dataset and create an sqlite instance with all the location data.
 
-## Data Loading
+The original dataset is available. [Download it **here**](https://github.com/renancpin/ip-location/raw/refs/heads/main/iplocation-dataset.csv?download=), and put it in the same folder where this project is cloned.
 
-Inside the `database` folder there is a [script](/database/import-ips.ts) to load the csv dataset and create an sqlite instance with the location data.
-
-To use it, run the `loadcsv` script on [package.json](package.json):
+Call the **`loadcsv`** script provided on [package.json](package.json#L8):
 
 ```bash
 yarn loadcsv
 ```
 
-To use a custom dataset filename, there's an environment variable available in the form of `IPLOCATION_CSV_PATH`
+### [OPTIONAL] Set Environment Variables
+
+Default values are provided for API running port, database location and dataset filename
+
+For the occasions when changing those values is necessary, use the available environment variables:
+
+| Name                  | Description                        |
+| --------------------- | ---------------------------------- |
+| `PORT`                | API address port                   |
+| `DB_HOST`             | Path where database is             |
+| `IPLOCATION_CSV_PATH` | Filename/path where csv dataset is |
+
+[**Dotenv**](https://www.dotenv.org/docs/) package is included. To use it, define a text file called `.env` and set variables as needed. You can also copy contents of the [`.env.example`](.env.example) file is available as a model
 
 ## Using the API
 
 While the API is running, make a GET request to `/ip/location`, passing an ipv4 address as the `ip` query parameter:
 
 ```bash
-curl --request GET \
-      --url 'http://localhost:3000/ip/location?ip=1.1.1.1'
+curl "http://localhost:3000/ip/location?ip=1.1.1.1"
 ```
 
 ## Running tests
