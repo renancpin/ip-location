@@ -115,10 +115,10 @@ For the occasions when changing those values is necessary, use the available env
 | Name                  | Description                        |
 | --------------------- | ---------------------------------- |
 | `PORT`                | API address port                   |
-| `DB_HOST`             | Path where database is             |
+| `DB_HOST`             | Path where database is located     |
 | `IPLOCATION_CSV_PATH` | Filename/path where csv dataset is |
 
-[**Dotenv**](https://www.dotenv.org/docs/) package is included. To use it, define a text file called `.env` and set variables as needed. You can also copy contents of the [`.env.example`](.env.example) file is available as a model
+[**Dotenv**](https://www.dotenv.org/docs/) package is included. To use it, define a text file called `.env` and set variables as needed. You can also copy contents from the [`.env.example`](.env.example) file that is provided as a model
 
 ## Using the API
 
@@ -147,7 +147,7 @@ yarn test:performance
 
 # Architectural Decisions
 
-While developing this application, many aspects have influenced important design and architectural decisions. The points presented below expose some of those aspects and the though behind the decisions made.
+While developing this application, many aspects have influenced important design and architectural decisions. The points presented below expose some of those aspects and the though behind each decision
 
 ### 1. Data Management Strategy: **CSV to Database**
 
@@ -157,7 +157,7 @@ Reading directly from a file is slow and difficult to optimize. A database is a 
 
 - Enables efficient **querying and filtering** of data
 - Improves **space usage**, both on disk and in memory
-- Allows for [**indexing capabilities**](#5-indexing) for faster data retrieval
+- Allows for [**indexing**](#5-indexing) for faster data retrieval
 
 ### 2. [**SQLite**](https://sqlite.org/index.html) as Database Choice
 
@@ -201,7 +201,7 @@ As the web framework is not very opinionated on software architecture itself, **
 
 2. **Dependency Injection**
 
-   It provides class and parameter Decorators to allow marking classes as injectable instances, as well as automatically reference other classes as arguments to the constructor, reducing boilerplate code
+   It provides class and parameter Decorators to allow marking classes as injectable instances, as well as automatically referencing other classes as arguments to the constructor, reducing boilerplate code
 
 ### 5. **Indexing**
 
@@ -217,11 +217,11 @@ WHERE ?ip BETWEEN lower_ip_id AND upper_ip_id
 LIMIT 1;
 ```
 
-By default, database engine will perform a full scan - check every row on table `ip`, because it assumes data is unordered.
+By default, database engine will perform a full scan - that is, checking every row on table `ip` - because it assumes data is unordered.
 
-A database index acts much like a contact list. It stores information ordered by "name", or any particular column, along with the "address" that points to the actual location of data.
+A database index acts much like an address or contact list. It stores information ordered by "name", or any particular column, along with the "address" that points to the actual location of data.
 
-Index should be created over the columns used for operations (like `=`, `>`, `<`). In our case, we should the engine to "order by" columns `lower_ip_id` and `upper_ip_id`, as those are columns frequently searched upon together:
+Index should be created over the columns used for operations (like `=`, `>`, `<`). In our case, we should tell the db engine to "order by" columns `lower_ip_id` and `upper_ip_id`, as those are columns frequently searched upon together:
 
 ```sql
 CREATE INDEX "ip_range" ON "ip" ("upper_ip_id", "lower_ip_id")
@@ -229,13 +229,13 @@ CREATE INDEX "ip_range" ON "ip" ("upper_ip_id", "lower_ip_id")
 
 > **Column order** is also important. Operations that further narrow down the search (like **equality** comparisons) come first. That way the number of "checks" the engine might perform is reduced
 
-That alone can reduce data retrieval time down to about 300ms. But that is not enough, and there's even more room for improvement.
+Bringing all the searched data to the index makes it unecessary to retrieve each row during lookup. That alone can reduce data retrieval time down to about 300ms.
 
-Other than column order, there is a simple adjustment that can further reduce query time
+But that is not enough, and there's even more room for improvement. Other than column order, there is a simple adjustment that can further reduce query time.
 
-Order of **data** itself, on the first column, doesn't really matter much, since the engine can choose to go up (ascending) or down (descending) based on proximity of value to index limits
+Order of **data** itself, on the first column, doesn't really matter much, since the engine can choose to go up (ascending) or down (descending) based on proximity of value to index upper or lower limits.
 
-But, since a range comparison has two operations (>= lower bound and <= upper bound), essentially the engine still has to check every row that fulfills the first condition in order to check on the second. Because it is unaware of range overlap, we can tell the engine that the second column is in descending order, so that it steps sooner into next range:
+But, since a range comparison has two operations (>= lower bound and <= upper bound), and because the database is unaware of range overlap, we can tell the engine that the second column which is already included in the index, is on **descending** order:
 
 ```sql
 CREATE INDEX "ip_range" ON "ip" (
@@ -243,3 +243,7 @@ CREATE INDEX "ip_range" ON "ip" (
   "lower_ip_id" DESC
 )
 ```
+
+With that small adjustment, the engine knows that if a particular combination of lower and upper limit won't fit criteria, there will be no similar range (with same upper or lower limit) that could fit it. That essentially reduces the amount of comparisons made, which brings worst case scenarios closer to the average case performance (now, `~10ms`).
+
+In conclusion, when using the specified index, tests will show average request times possibly below `100ms`. A satisfactory performance that entirely satisfies essential and desired criteria.
