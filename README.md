@@ -235,7 +235,7 @@ But that is not enough, and there's even more room for improvement. Other than c
 
 Order of **data** itself, on the first column, doesn't really matter much, since the engine can choose to go up (ascending) or down (descending) based on proximity of value to index upper or lower limits.
 
-But, since a range comparison has two operations (>= lower bound and <= upper bound), and because the database is unaware of range overlap, we can tell the engine that the second column which is already included in the index, is on **descending** order:
+But, since a range comparison has two operations (`>= lower bound` and `<= upper bound`), and because the database is unaware of range overlap, we can tell the engine that the second column on the index, is on **descending** order:
 
 ```sql
 CREATE INDEX "ip_range" ON "ip" (
@@ -244,6 +244,6 @@ CREATE INDEX "ip_range" ON "ip" (
 )
 ```
 
-With that small adjustment, the engine knows that if a particular combination of lower and upper limit won't fit criteria, there will be no similar range (with same upper or lower limit) that could fit it. That essentially reduces the amount of comparisons made, which brings worst case scenarios closer to the average case performance (now, `~10ms`).
+With that small adjustment, the engine knows that if a particular combination of lower and upper limits won't fulfill the criteria, there will be no similar range (with same upper or lower limit) that could. That essentially reduces the amount of comparisons made, which brings worst case scenarios closer to the average case performance (now, a stunning `10-30ms`).
 
-In conclusion, when using the specified index, tests will show average request times possibly below `100ms`. A satisfactory performance that entirely satisfies essential and desired criteria.
+In conclusion, when using the specified index, tests will show that average request time is possibly below `100ms`. A performance that entirely satisfies both essential and desired criteria.
