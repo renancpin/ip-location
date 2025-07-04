@@ -1,0 +1,15 @@
+services:
+  server:
+    build:
+      context: .
+    environment:
+      NODE_ENV: production
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+    volumes:
+      - db-data:/database
+
+volumes:
+  db-data:
